@@ -5,8 +5,8 @@ interface Board {
   userId: string
   title: string
   columns: Column[]
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
 }
 
 interface Column {
@@ -23,10 +23,10 @@ interface Task {
   title: string
   description: string | null
   priority: Priority
-  dueDate: Date | null
+  dueDate: string | null
   position: number
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
 }
 
 interface NewTask {
@@ -34,7 +34,12 @@ interface NewTask {
   title: string
   description?: string
   priority: Priority
-  dueDate?: Date
+  dueDate?: string
 }
 
-export type { Board, Column, Task, NewTask }
+interface NewColumn {
+  title: string
+  boardId: string
+}
+
+export type { Board, Column, Task, NewTask, NewColumn }
