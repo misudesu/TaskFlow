@@ -1,15 +1,8 @@
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-@theme inline {
-  --font-poppins: 'Poppins', sans-serif;
-}
-
 body {
   background: #0F0F0F;
   color: #F1F5F9;
-  font-family: var(--font-poppins);
 }
 
 /* Custom scrollbar for dark theme */
