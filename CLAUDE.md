@@ -407,6 +407,56 @@ const reorderItems = async (
 - Positions are 0-indexed integers
 - When moving a task between columns, update both `columnId` and `position`
 
+### CRUD Flow Documentation
+
+#### Task CRUD
+
+| Operation | Method | Route | Payload | Auto |
+|-----------|--------|-------|---------|------|
+| CREATE | POST | `/api/tasks` | `{ title, columnId, description?, priority?, dueDate? }` | position = count of tasks in column |
+| READ | — | Loaded via `getOrCreateBoard()` in server page | — | Included in board data |
+| UPDATE | PATCH | `/api/tasks/[id]` | Any subset of `{ title, description, priority, dueDate, columnId, position }` | Verifies target column ownership on move |
+| DELETE | DELETE | `/api/tasks/[id]` | — | Optimistic removal + rollback on error |
+
+#### Column CRUD
+
+| Operation | Method | Route | Payload | Auto |
+|-----------|--------|-------|---------|------|
+| CREATE | POST | `/api/columns` | `{ title, boardId }` | position = count of columns in board |
+| READ | — | Loaded via `getOrCreateBoard()` in server page | — | Included in board data |
+| UPDATE | PATCH | `/api/columns/[id]` | `{ title?, position? }` | — |
+| DELETE | DELETE | `/api/columns/[id]` | — | Cascade deletes all tasks |
+
+#### Bulk Reorder (Drag-and-Drop)
+
+| Operation | Method | Route | Payload |
+|-----------|--------|-------|---------|
+| REORDER | PATCH | `/api/boards/reorder` | `{ boardId, columns?: [{id, position}], tasks?: [{id, position, columnId?}] }` |
+
+Uses `$transaction` for atomicity. Handles column reorder, same-column task reorder, and cross-column task move.
+
+#### Data Flow Diagram
+
+```
+User Action (click/drag)
+    ↓
+Client Component (Board/Column/TaskCard)
+    ↓
+Feature Hook (useBoard/useTasks/useColumns)
+    ↓ optimistic state update (save rollback snapshot)
+Feature API (api.ts) → fetch('/api/...')
+    ↓
+API Route → auth() → ownership verify → Prisma query
+    ↓
+Database (SQLite)
+    ↓
+Response { data } or { error }
+    ↓
+Hook: on success → toast('success'), on error → rollback + toast('error')
+    ↓
+UI re-renders with new state
+```
+
 ### Database Commands
 
 ```bash
